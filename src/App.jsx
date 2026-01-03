@@ -1941,3 +1941,19 @@ const CustomerDashboard = ({ navigate }) => {
   );
 };
 
+
+// Main App
+const App = () => {
+  return (
+    <AuthProvider>
+      <Router>
+        <Route path="/" component={LoginPage} />
+        <ProtectedRoute path="/admin/dashboard" component={AdminDashboard} allowedRole="admin" />
+        <ProtectedRoute path="/customers/dashboard" component={CustomerDashboard} allowedRole="customer" />
+      </Router>
+    </AuthProvider>
+  );
+};
+
+export default App;
+
