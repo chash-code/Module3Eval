@@ -1804,5 +1804,140 @@ const AdminDashboard = ({ navigate }) => {
     </div>
   );
 };
-  
+
+// Customer Dashboard
+const CustomerDashboard = ({ navigate }) => {
+  const { logout } = useAuth();
+  const [restaurants, setRestaurants] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState('');
+  const [filterParking, setFilterParking] = useState('');
+  const searchInputRef = useRef(null);
+
+  const restaurantTypes = ['Rajasthani', 'Gujarati', 'Mughlai', 'Jain', 'Thai', 'North Indian', 'South Indian'];
+
+  useEffect(() => {
+    loadRestaurants();
+    const interval = setInterval(loadRestaurants, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, []);
+
+  const loadRestaurants = () => {
+    const data = localStorage.getItem('evalData');
+    if (data) {
+      setRestaurants(JSON.parse(data));
+    }
+  };
+
+  const filteredRestaurants = restaurants.filter(r => {
+    const matchesSearch = r.restaurantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         r.address.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = !filterType || r.type === filterType;
+    const matchesParking = !filterParking || r.parkingLot.toString() === filterParking;
+    return matchesSearch && matchesType && matchesParking;
+  });
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <nav className="bg-white shadow">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800">🍽️ Restaurant Finder</h1>
+              <p className="text-gray-600 text-sm">Customer Dashboard</p>
+            </div>
+            <button
+              onClick={() => {
+                logout();
+                navigate('/');
+              }}
+              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="bg-white rounded-lg shadow p-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder="Search by name or address"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              >
+                <option value="">All Types</option>
+                {restaurantTypes.map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <select
+                value={filterParking}
+                onChange={(e) => setFilterParking(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              >
+                <option value="">All Parking</option>
+                <option value="true">With Parking</option>
+                <option value="false">No Parking</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredRestaurants.map(restaurant => (
+            <div key={restaurant.restaurantID} className="bg-white rounded-lg shadow hover:shadow-lg transition">
+              <img
+                src={restaurant.image}
+                alt={restaurant.restaurantName}
+                className="w-full h-48 object-cover rounded-t-lg"
+              />
+              <div className="p-4">
+                <h3 className="text-xl font-bold text-gray-800 mb-2">{restaurant.restaurantName}</h3>
+                <p className="text-gray-600 text-sm mb-2">{restaurant.address}</p>
+                <div className="flex items-center justify-between">
+                  <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
+                    {restaurant.type}
+                  </span>
+                  <span className={`px-3 py-1 rounded-full text-sm ${
+                    restaurant.parkingLot ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                  }`}>
+                    {restaurant.parkingLot ? '🅿️ Parking' : 'No Parking'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {filteredRestaurants.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">No restaurants found</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
